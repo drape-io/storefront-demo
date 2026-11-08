@@ -8,6 +8,7 @@ from storefront.cart.models import Coupon, Customer
 COUPONS: dict[str, Coupon] = {}
 
 
+
 class CouponError(Exception):
     pass
 
@@ -27,8 +28,17 @@ def check_eligibility(coupon: Coupon, customer: Customer, now: datetime | None =
         raise CouponError(f"{coupon.code} is only valid on a first order")
 
 
-def lookup_coupon(code: str, customer: Customer) -> Coupon:
-    """The coupon for ``code`` if ``customer`` may use it, else CouponError."""
-    coupon = fetch_coupon(code)
+def lookup_coupon(code: str, customer: Customer, cache: dict[str, Coupon] | None = None) -> Coupon:
+    """The coupon for ``code`` if ``customer`` may use it, else CouponError.
+
+    ``cache`` holds coupons already fetched during one checkout, so a code hits the coupons
+    table once per checkout. Eligibility is always checked for this customer, now.
+    """
+    key = code.upper()
+    coupon = cache.get(key) if cache is not None else None
+    if coupon is None:
+        coupon = fetch_coupon(code)
+        if cache is not None:
+            cache[key] = coupon
     check_eligibility(coupon, customer)
     return coupon
