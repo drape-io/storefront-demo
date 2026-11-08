@@ -17,7 +17,6 @@ def coupon_table():
         "BIG50": Coupon("BIG50", amount_off=Decimal("50"), min_spend=Decimal("200")),
         "OLD": Coupon("OLD", percent_off=Decimal("10"), expires_at=datetime.now(UTC) - timedelta(days=1)),
     })
-    coupons.clear_lookup_cache()
     yield coupons.COUPONS
 
 
