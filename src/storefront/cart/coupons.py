@@ -7,6 +7,10 @@ from storefront.cart.models import Coupon, Customer
 # Stands in for the coupons table.
 COUPONS: dict[str, Coupon] = {}
 
+# Checkout looks the same codes up several times per request (cart page, totals, order
+# confirmation). Cache resolved coupons so each code hits the coupons table once.
+_lookup_cache: dict[str, Coupon] = {}
+
 
 class CouponError(Exception):
     pass
@@ -29,6 +33,14 @@ def check_eligibility(coupon: Coupon, customer: Customer, now: datetime | None =
 
 def lookup_coupon(code: str, customer: Customer) -> Coupon:
     """The coupon for ``code`` if ``customer`` may use it, else CouponError."""
+    key = code.upper()
+    if key in _lookup_cache:
+        return _lookup_cache[key]
     coupon = fetch_coupon(code)
     check_eligibility(coupon, customer)
+    _lookup_cache[key] = coupon
     return coupon
+
+
+def clear_lookup_cache() -> None:
+    _lookup_cache.clear()
