@@ -1,0 +1,9 @@
+[project]
+name = "storefront"
+version = "0.1.0"
+description = "Demo storefront: carts, coupons and pricing."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
